@@ -10,10 +10,9 @@ app.use('/api/v1/auth', authRoutes);
 
 // Koneksi DB
 try {
-  await mongoose.connect('process.env.DATABASE');
+  await mongoose.connect(process.env.DATABASE);
   console.log("Database connected");
 } catch (error) {
-  handleError(error);
   console.log("Database not connected");
 }
 
