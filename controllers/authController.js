@@ -1,5 +1,31 @@
 import asyncHandler from "../middleware/asyncHandler.js"
 import User from "../models/User.js"
+import jwt from "jsonwebtoken"
+
+const signToken = (id) => {
+  return jwt.sign({id}, process.env.JWT_SECRET, {
+    expiresIn: "6d"
+  })
+}
+
+const createResToken = (user, statusCode, res) => {
+  const token = signToken(user._id)
+
+  const cookieOptions = {
+    expire: new Date(
+      Date.now()+6*24*60*60*1000
+  ),
+  httpOnly: true,
+  security: false
+  }
+  res.cookie('jwt', token, cookieOptions)
+
+  user.password = undefined
+
+  res.status(statusCode).json({
+    user
+  })
+}
 
 export const registerUser = asyncHandler(async(req, res, ) => {
     const isFirstUser = (await User.countDocuments()) ===0 ? 'admin' : "user"
@@ -10,10 +36,7 @@ export const registerUser = asyncHandler(async(req, res, ) => {
       role: isFirstUser
     })
 
-    res.status(201).json({
-      message: "Register Success",
-      user
-    })
+   createResToken(user, 201, res)
   
 })
 
@@ -25,14 +48,14 @@ export const loginUser = asyncHandler(async(req,res)=>{
   }
   // 2. buat kondisi bagaimana jika emamil dan password yang dimasukkan salah
   const userData = await User.findOne({
-    email:req.body.email
+    email: req.body.email
   })
-  if(!userData && (await userData.comparePassword(req.body.password))){
+  if(userData && (await userData.comparePassword(req.body.password))){
+   createResToken(userData, 200, res)
+
+  }else{
     res.status(400)
     throw new Error("User not found")
   }
-  res.status(200),json({
-    message :"Login Success",
-    
-  })
+  
 })
