@@ -4,7 +4,7 @@ import 'dotenv/config';
 import mongoose from "mongoose";
 import { errorHandler,notFoundPath } from "./middleware/errorMiddleware.js";
 import cookieParser from "cookie-parser";
-
+import userRouter from "./routes/userRoutes.js";
 
 const app = express();
 const port = 3000;
@@ -13,6 +13,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/user', userRouter)
 
 app.use(notFoundPath)
 app.use(errorHandler)
